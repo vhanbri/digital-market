@@ -1,0 +1,2 @@
+-- OrderItems table schema
+-- Will be implemented during database setup phase

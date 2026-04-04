@@ -1,0 +1,27 @@
+---
+description: AniKo project coding standards and architecture constraints
+globs:
+alwaysApply: true
+---
+
+# AniKo — Cursor Rules
+
+Before writing or modifying ANY code in this repository, you MUST:
+
+1. Read `docs/AI_RULES.md` — it contains mandatory naming conventions, architecture boundaries, API standards, database rules, security rules, and MVP scope constraints.
+2. Read `docs/PRD.md` — it defines the product requirements and what is in/out of scope.
+3. Read `docs/TECH_ARCHI.md` — it defines the system architecture and project structure.
+
+## Quick reference
+
+- **Backend architecture**: Supabase (Auth + PostgreSQL + RLS + Database Functions). No Express server.
+- **Frontend architecture**: Pages → Hooks → Services → Supabase Client (`lib/supabase.ts`). Never call `supabase` from a page or component.
+- **Auth**: Supabase Auth (email/password). No custom JWT. No self-registration of admins.
+- **Data access**: `supabase.from('table')` queries in service files only. RLS enforces authorization.
+- **Transactions**: Use `supabase.rpc('function_name')` for transactional operations (e.g., `place_order`).
+- **Database**: UUIDs for PKs. RLS on all tables. Triggers for `updated_at`. `profiles` table linked to `auth.users`.
+- **TypeScript**: `strict: true`. No `any` without justification. Frontend dates are `string`.
+- **Styling**: Tailwind utilities only. Use `brand-*` color tokens, never raw hex.
+- **MVP scope**: No logistics, delivery tracking, AI pricing, payments, mobile app, or analytics.
+
+When in doubt, read `docs/AI_RULES.md` again.
