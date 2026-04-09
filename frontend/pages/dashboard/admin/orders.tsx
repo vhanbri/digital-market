@@ -35,7 +35,7 @@ const STATUS_BADGE: Record<OrderStatus, 'yellow' | 'green' | 'red' | 'gray'> = {
 
 const ALL_STATUSES: OrderStatus[] = ['pending', 'accepted', 'rejected', 'delivered'];
 
-type OrderWithBuyer = Order & { profiles?: { name: string } };
+type OrderWithBuyer = Order & { buyer_name?: string };
 
 export default function AdminOrders() {
   const router = useRouter();
@@ -86,7 +86,7 @@ export default function AdminOrders() {
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
-        (o) => o.id.toLowerCase().includes(q) || o.buyer_id.toLowerCase().includes(q) || (o.profiles?.name ?? '').toLowerCase().includes(q),
+        (o) => o.id.toLowerCase().includes(q) || o.buyer_id.toLowerCase().includes(q) || (o.buyer_name ?? '').toLowerCase().includes(q),
       );
     }
     setFiltered(result);
@@ -240,7 +240,7 @@ export default function AdminOrders() {
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="text-sm text-gray-700">
-                          {order.profiles?.name ?? order.buyer_id.slice(0, 8)}
+                          {order.buyer_name ?? order.buyer_id.slice(0, 8)}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">

@@ -33,14 +33,28 @@ export async function deleteUser(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-export async function getAdminOrders(): Promise<(Order & { profiles?: { name: string } })[]> {
-  const { data, error } = await supabase
+export async function getAdminOrders(): Promise<(Order & { buyer_name?: string })[]> {
+  const { data: orders, error } = await supabase
     .from('orders')
-    .select('*, profiles!buyer_id(name)')
+    .select('*')
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as (Order & { profiles?: { name: string } })[];
+
+  const buyerIds = [...new Set((orders ?? []).map((o) => o.buyer_id))];
+  if (buyerIds.length === 0) return (orders ?? []) as (Order & { buyer_name?: string })[];
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, name')
+    .in('id', buyerIds);
+
+  const nameMap = new Map((profiles ?? []).map((p) => [p.id, p.name]));
+
+  return (orders ?? []).map((o) => ({
+    ...o,
+    buyer_name: nameMap.get(o.buyer_id) ?? undefined,
+  })) as (Order & { buyer_name?: string })[];
 }
 
 export async function getAdminOrderById(id: string): Promise<OrderWithItems> {
