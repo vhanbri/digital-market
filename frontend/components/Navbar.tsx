@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useAuth } from '../hooks/useAuth';
+import { useCart } from '../hooks/useCart';
 
 interface NavLink {
   href: string;
@@ -49,6 +50,7 @@ const DASHBOARD_ROUTES: Record<string, string> = {
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { totalItems } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +82,7 @@ export const Navbar = () => {
         <nav className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => {
             const Icon = link.icon;
+            const isCart = link.href === '/dashboard/buyer/cart';
             return (
               <Link
                 key={link.href}
@@ -88,6 +91,11 @@ export const Navbar = () => {
               >
                 {Icon && isAuthenticated && <Icon size={15} className="text-gray-400" />}
                 {link.label}
+                {isCart && totalItems > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-bold leading-none text-white">
+                    {totalItems > 99 ? '99+' : totalItems}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -99,9 +107,14 @@ export const Navbar = () => {
               {user.role === 'buyer' && (
                 <Link
                   href="/dashboard/buyer/cart"
-                  className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                  className="relative rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
                 >
                   <ShoppingCart size={20} />
+                  {totalItems > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-bold leading-none text-white shadow-sm">
+                      {totalItems > 99 ? '99+' : totalItems}
+                    </span>
+                  )}
                 </Link>
               )}
 
