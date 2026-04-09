@@ -23,6 +23,7 @@ import { Modal } from '../../../components/ui/Modal';
 import { useCart } from '../../../hooks/useCart';
 import { useAuth } from '../../../hooks/useAuth';
 import { placeOrder } from '../../../services/order.service';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import type { CartItem } from '../../../hooks/useCart';
 import type { OrderWithItems } from '../../../types';
 
@@ -230,19 +231,13 @@ export default function BuyerCart() {
             </div>
           </div>
         ) : items.length === 0 && !receipt ? (
-          <div className="rounded-xl border border-gray-200 bg-white px-6 py-16 text-center">
-            <ShoppingBag size={48} className="mx-auto mb-4 text-gray-300" />
-            <p className="mb-1 text-lg font-medium text-gray-700">Your cart is empty</p>
-            <p className="mb-6 text-sm text-gray-400">
-              Browse the marketplace and add items to get started.
-            </p>
-            <Link href="/marketplace">
-              <Button>
-                <Store size={16} />
-                Browse Marketplace
-              </Button>
-            </Link>
-          </div>
+          <EmptyState
+            icon={ShoppingBag}
+            title="Your cart is empty"
+            description="Browse the marketplace and add items to get started."
+            actionLabel="Browse Marketplace"
+            actionHref="/marketplace"
+          />
         ) : !receipt ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">

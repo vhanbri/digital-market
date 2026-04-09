@@ -8,11 +8,13 @@ import {
   Phone,
   User,
   FileText,
+  ClipboardList,
 } from 'lucide-react';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { BUYER_LINKS } from '../../../constants/navigation';
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { getOrders, getOrderById } from '../../../services/order.service';
 import type { Order, OrderWithItems, OrderStatus } from '../../../types';
 
@@ -157,11 +159,19 @@ export default function BuyerOrders() {
             <div className="flex justify-center py-16">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
             </div>
+          ) : orders.length === 0 ? (
+            <div className="px-6 py-3">
+              <EmptyState
+                icon={ClipboardList}
+                title="No orders yet"
+                description="Once you place your first order from the marketplace, it will appear here."
+                actionLabel="Browse Marketplace"
+                actionHref="/marketplace"
+              />
+            </div>
           ) : filtered.length === 0 ? (
             <div className="px-6 py-16 text-center text-sm text-gray-400">
-              {orders.length === 0
-                ? "You haven't placed any orders yet."
-                : 'No orders match your filter.'}
+              No orders match your filter.
             </div>
           ) : (
             <div className="overflow-x-auto">
