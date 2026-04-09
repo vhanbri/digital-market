@@ -3,11 +3,15 @@ import {
   View,
   Text,
   FlatList,
+  TextInput,
   TouchableOpacity,
+  ScrollView,
   StyleSheet,
   Alert,
   ActivityIndicator,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -21,23 +25,48 @@ import type { AppStackParamList } from '../navigation/types';
 
 export default function CartScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
-  const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { items, removeItem, updateQuantity, clearCart, totalPrice, totalItems } = useCart();
+  const { isAuthenticated, user } = useAuth();
   const [placing, setPlacing] = useState(false);
   const [confirmation, setConfirmation] = useState<{ orderId: string; total: number } | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
-  const handlePlaceOrder = async () => {
+  const [deliveryName, setDeliveryName] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryPhone, setDeliveryPhone] = useState('');
+  const [deliveryNotes, setDeliveryNotes] = useState('');
+
+  const openCheckout = () => {
     if (!isAuthenticated) {
       Alert.alert('Not signed in', 'Please log in to place an order.');
       return;
     }
-    if (items.length === 0) return;
+    setDeliveryName(user?.name ?? '');
+    setDeliveryAddress(user?.location ?? '');
+    setDeliveryPhone(user?.phone ?? '');
+    setDeliveryNotes('');
+    setShowCheckout(true);
+  };
 
+  const handleConfirmOrder = async () => {
+    if (!deliveryName.trim() || !deliveryAddress.trim() || !deliveryPhone.trim()) {
+      Alert.alert('Missing Info', 'Please fill in your name, delivery address, and phone number.');
+      return;
+    }
     try {
       setPlacing(true);
-      const order = await placeOrder(items.map((i) => ({ crop_id: i.crop.id, quantity: i.quantity })));
+      const order = await placeOrder(
+        items.map((i) => ({ crop_id: i.crop.id, quantity: i.quantity })),
+        {
+          name: deliveryName.trim(),
+          address: deliveryAddress.trim(),
+          phone: deliveryPhone.trim(),
+          notes: deliveryNotes.trim() || undefined,
+        },
+      );
       const total = totalPrice;
       clearCart();
+      setShowCheckout(false);
       setConfirmation({ orderId: order.id ?? '', total });
     } catch (err: any) {
       Alert.alert('Order Failed', err.message || 'Something went wrong.');
@@ -54,17 +83,11 @@ export default function CartScreen() {
       </View>
       <View style={styles.cardRight}>
         <View style={styles.qtyControls}>
-          <TouchableOpacity
-            style={styles.qtyBtn}
-            onPress={() => updateQuantity(item.crop.id, item.quantity - 1)}
-          >
-            <Text style={styles.qtyBtnText}>−</Text>
+          <TouchableOpacity style={styles.qtyBtn} onPress={() => updateQuantity(item.crop.id, item.quantity - 1)}>
+            <Text style={styles.qtyBtnText}>-</Text>
           </TouchableOpacity>
           <Text style={styles.qtyValue}>{item.quantity}</Text>
-          <TouchableOpacity
-            style={styles.qtyBtn}
-            onPress={() => updateQuantity(item.crop.id, item.quantity + 1)}
-          >
+          <TouchableOpacity style={styles.qtyBtn} onPress={() => updateQuantity(item.crop.id, item.quantity + 1)}>
             <Text style={styles.qtyBtnText}>+</Text>
           </TouchableOpacity>
         </View>
@@ -78,12 +101,13 @@ export default function CartScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Confirmation Modal */}
       <Modal visible={!!confirmation} transparent animationType="fade">
         <View style={styles.confirmOverlay}>
           <View style={styles.confirmCard}>
             <Ionicons name="checkmark-circle" size={64} color={colors.brand[600]} />
-            <Text style={styles.confirmTitle}>Order Placed!</Text>
-            <Text style={styles.confirmSub}>Your order has been submitted successfully.</Text>
+            <Text style={styles.confirmTitle}>Order Accepted!</Text>
+            <Text style={styles.confirmSub}>Your order was validated and automatically accepted.</Text>
             {confirmation && (
               <Text style={styles.confirmTotal}>Total: ₱{confirmation.total.toFixed(2)}</Text>
             )}
@@ -102,6 +126,47 @@ export default function CartScreen() {
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+
+      {/* Checkout Form Modal */}
+      <Modal visible={showCheckout} transparent animationType="slide">
+        <KeyboardAvoidingView style={styles.checkoutOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView contentContainerStyle={styles.checkoutScroll} keyboardShouldPersistTaps="handled">
+            <View style={styles.checkoutCard}>
+              <View style={styles.checkoutHeader}>
+                <TouchableOpacity onPress={() => setShowCheckout(false)}>
+                  <Ionicons name="arrow-back" size={22} color={colors.gray[700]} />
+                </TouchableOpacity>
+                <Text style={styles.checkoutTitle}>Delivery Information</Text>
+              </View>
+
+              <Text style={styles.label}>Full Name *</Text>
+              <TextInput style={styles.input} value={deliveryName} onChangeText={setDeliveryName} placeholder="Your full name" placeholderTextColor={colors.gray[400]} />
+
+              <Text style={styles.label}>Delivery Address *</Text>
+              <TextInput style={[styles.input, styles.textArea]} value={deliveryAddress} onChangeText={setDeliveryAddress} placeholder="Complete delivery address" multiline numberOfLines={3} placeholderTextColor={colors.gray[400]} />
+
+              <Text style={styles.label}>Phone Number *</Text>
+              <TextInput style={styles.input} value={deliveryPhone} onChangeText={setDeliveryPhone} placeholder="e.g. 09171234567" keyboardType="phone-pad" placeholderTextColor={colors.gray[400]} />
+
+              <Text style={styles.label}>Order Notes (optional)</Text>
+              <TextInput style={[styles.input, styles.textArea]} value={deliveryNotes} onChangeText={setDeliveryNotes} placeholder="Special instructions..." multiline numberOfLines={2} placeholderTextColor={colors.gray[400]} />
+
+              <View style={styles.checkoutSummary}>
+                <Text style={styles.summaryLabel}>{totalItems} items</Text>
+                <Text style={styles.summaryValue}>₱{totalPrice.toFixed(2)}</Text>
+              </View>
+
+              <TouchableOpacity style={[styles.orderButton, placing && styles.orderButtonDisabled]} onPress={handleConfirmOrder} disabled={placing}>
+                {placing ? <ActivityIndicator color={colors.white} /> : <Text style={styles.orderButtonText}>Confirm Order</Text>}
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.confirmSecondary} onPress={() => setShowCheckout(false)}>
+                <Text style={styles.confirmSecondaryText}>Back to Cart</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
 
       {items.length === 0 ? (
@@ -123,16 +188,8 @@ export default function CartScreen() {
               <Text style={styles.totalLabel}>Total</Text>
               <Text style={styles.totalValue}>₱{totalPrice.toFixed(2)}</Text>
             </View>
-            <TouchableOpacity
-              style={[styles.orderButton, placing && styles.orderButtonDisabled]}
-              onPress={handlePlaceOrder}
-              disabled={placing}
-            >
-              {placing ? (
-                <ActivityIndicator color={colors.white} />
-              ) : (
-                <Text style={styles.orderButtonText}>Place Order</Text>
-              )}
+            <TouchableOpacity style={styles.orderButton} onPress={openCheckout}>
+              <Text style={styles.orderButtonText}>Proceed to Checkout</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -163,10 +220,7 @@ const styles = StyleSheet.create({
   qtyValue: { fontSize: fontSize.md, fontWeight: '700', color: colors.gray[900], minWidth: 24, textAlign: 'center' },
   lineTotal: { fontSize: fontSize.md, fontWeight: '700', color: colors.brand[700], marginTop: spacing.sm },
   removeText: { fontSize: fontSize.xs, color: colors.red[500], marginTop: spacing.xs },
-  footer: {
-    backgroundColor: colors.white, padding: spacing.xl,
-    borderTopWidth: 1, borderTopColor: colors.gray[200],
-  },
+  footer: { backgroundColor: colors.white, padding: spacing.xl, borderTopWidth: 1, borderTopColor: colors.gray[200] },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.lg },
   totalLabel: { fontSize: fontSize.lg, fontWeight: '600', color: colors.gray[700] },
   totalValue: { fontSize: fontSize.xl, fontWeight: '700', color: colors.brand[800] },
@@ -182,4 +236,15 @@ const styles = StyleSheet.create({
   confirmBtnText: { color: colors.white, fontSize: fontSize.md, fontWeight: '700' },
   confirmSecondary: { marginTop: spacing.md, paddingVertical: spacing.md },
   confirmSecondaryText: { fontSize: fontSize.sm, fontWeight: '600', color: colors.gray[500] },
+  checkoutOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  checkoutScroll: { flexGrow: 1, justifyContent: 'flex-end' },
+  checkoutCard: { backgroundColor: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: spacing.xxl, paddingBottom: spacing.xxxl + 20 },
+  checkoutHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xl },
+  checkoutTitle: { fontSize: fontSize.xl, fontWeight: '700', color: colors.gray[900] },
+  label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.gray[700], marginBottom: spacing.xs },
+  input: { backgroundColor: colors.gray[50], borderWidth: 1, borderColor: colors.gray[200], borderRadius: 10, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, fontSize: fontSize.md, color: colors.gray[900], marginBottom: spacing.lg },
+  textArea: { minHeight: 70, textAlignVertical: 'top' },
+  checkoutSummary: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.md, borderTopWidth: 1, borderTopColor: colors.gray[200], marginTop: spacing.sm, marginBottom: spacing.lg },
+  summaryLabel: { fontSize: fontSize.md, color: colors.gray[500] },
+  summaryValue: { fontSize: fontSize.xl, fontWeight: '700', color: colors.brand[800] },
 });

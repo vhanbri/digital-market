@@ -6,9 +6,20 @@ interface PlaceOrderItem {
   quantity: number;
 }
 
-export async function placeOrder(items: PlaceOrderItem[]): Promise<Order> {
+export interface DeliveryInfo {
+  name: string;
+  address: string;
+  phone: string;
+  notes?: string;
+}
+
+export async function placeOrder(items: PlaceOrderItem[], delivery: DeliveryInfo): Promise<Order> {
   const { data, error } = await supabase.rpc('place_order', {
     p_items: items,
+    p_delivery_name: delivery.name,
+    p_delivery_address: delivery.address,
+    p_delivery_phone: delivery.phone,
+    p_delivery_notes: delivery.notes ?? null,
   });
 
   if (error) throw new Error(error.message);

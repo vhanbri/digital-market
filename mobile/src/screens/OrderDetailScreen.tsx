@@ -130,6 +130,36 @@ export default function OrderDetailScreen() {
         </View>
       )}
 
+      {(order.delivery_name || order.delivery_address || order.delivery_phone) && (
+        <View style={styles.deliveryCard}>
+          <Text style={styles.cardTitle}>Delivery Information</Text>
+          {order.delivery_name && (
+            <View style={styles.deliveryRow}>
+              <Ionicons name="person-outline" size={16} color={colors.gray[400]} />
+              <Text style={styles.deliveryText}>{order.delivery_name}</Text>
+            </View>
+          )}
+          {order.delivery_address && (
+            <View style={styles.deliveryRow}>
+              <Ionicons name="location-outline" size={16} color={colors.gray[400]} />
+              <Text style={styles.deliveryText}>{order.delivery_address}</Text>
+            </View>
+          )}
+          {order.delivery_phone && (
+            <View style={styles.deliveryRow}>
+              <Ionicons name="call-outline" size={16} color={colors.gray[400]} />
+              <Text style={styles.deliveryText}>{order.delivery_phone}</Text>
+            </View>
+          )}
+          {order.delivery_notes && (
+            <View style={styles.deliveryRow}>
+              <Ionicons name="document-text-outline" size={16} color={colors.gray[400]} />
+              <Text style={[styles.deliveryText, { fontStyle: 'italic', color: colors.gray[500] }]}>{order.delivery_notes}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
       <View style={styles.itemsCard}>
         <Text style={styles.cardTitle}>Items ({items.length})</Text>
         {items.map((item) => (
@@ -182,6 +212,13 @@ const styles = StyleSheet.create({
   stepLineActive: { backgroundColor: colors.brand[600] },
   stepLabel: { fontSize: fontSize.xs, color: colors.gray[400], marginTop: spacing.sm },
   stepLabelActive: { color: colors.brand[700], fontWeight: '600' },
+
+  deliveryCard: {
+    backgroundColor: colors.white, borderRadius: 14, padding: spacing.xxl,
+    borderWidth: 1, borderColor: colors.gray[200], marginBottom: spacing.lg,
+  },
+  deliveryRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginBottom: spacing.sm },
+  deliveryText: { fontSize: fontSize.sm, color: colors.gray[700], flex: 1 },
 
   itemsCard: {
     backgroundColor: colors.white, borderRadius: 14, padding: spacing.xxl,
