@@ -15,6 +15,9 @@ import { BUYER_LINKS } from '../../../constants/navigation';
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { EmptyState } from '../../../components/ui/EmptyState';
+import { Pagination } from '../../../components/ui/Pagination';
+
+const PAGE_SIZE = 10;
 import { getOrders, getOrderById } from '../../../services/order.service';
 import type { Order, OrderWithItems, OrderStatus } from '../../../types';
 
@@ -43,6 +46,8 @@ export default function BuyerOrders() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
+
+  const [page, setPage] = useState(0);
 
   const [detailOrder, setDetailOrder] = useState<OrderWithItems | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -186,7 +191,7 @@ export default function BuyerOrders() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.map((order) => (
+                  {filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((order) => (
                     <tr key={order.id} className="transition-colors hover:bg-gray-50/50">
                       <td className="px-5 py-3.5">
                         <span className="font-mono text-xs text-gray-600">
@@ -223,6 +228,11 @@ export default function BuyerOrders() {
           )}
         </div>
 
+        <Pagination
+          currentPage={page}
+          totalPages={Math.ceil(filtered.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
         <p className="mt-3 text-right text-xs text-gray-400">
           Showing {filtered.length} of {orders.length} orders
         </p>
