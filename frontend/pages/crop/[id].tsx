@@ -111,7 +111,7 @@ export default function CropDetailPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-3xl font-bold text-brand-800">
-                      ${Number(crop.price).toFixed(2)}
+                      ₱{Number(crop.price).toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-400">per unit</p>
                   </div>
@@ -193,7 +193,7 @@ export default function CropDetailPage() {
                           ) : (
                             <>
                               <ShoppingCart size={18} />
-                              Add to Cart &mdash; $
+                              Add to Cart &mdash; ₱
                               {(Number(crop.price) * qty).toFixed(2)}
                             </>
                           )}

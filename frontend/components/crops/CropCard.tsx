@@ -32,7 +32,7 @@ export const CropCard = ({ crop }: CropCardProps) => {
             </h3>
           </Link>
           <span className="ml-2 whitespace-nowrap rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-semibold text-brand-800">
-            ${Number(crop.price).toFixed(2)}
+            ₱{Number(crop.price).toFixed(2)}
           </span>
         </div>
 

@@ -253,7 +253,7 @@ export default function AdminListings() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5 font-semibold text-gray-900">
-                        ${Number(crop.price).toFixed(2)}
+                        ₱{Number(crop.price).toFixed(2)}
                       </td>
                       <td className="px-5 py-3.5">
                         <span
@@ -333,7 +333,7 @@ export default function AdminListings() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <InfoItem label="Listing ID" value={selectedCrop.id} />
-                <InfoItem label="Price" value={`$${Number(selectedCrop.price).toFixed(2)}`} />
+                <InfoItem label="Price" value={`₱${Number(selectedCrop.price).toFixed(2)}`} />
                 <InfoItem label="Stock" value={String(selectedCrop.quantity)} />
                 <InfoItem
                   label="Harvest Date"

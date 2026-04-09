@@ -68,7 +68,7 @@ export const OrderTable = ({
                   </Badge>
                 </td>
                 <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                  ${order.total_price.toFixed(2)}
+                  ₱{order.total_price.toFixed(2)}
                 </td>
               </tr>
             );

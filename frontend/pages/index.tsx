@@ -190,10 +190,10 @@ const HomePage = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { name: 'Organic Tomatoes', price: '$4.50/kg', farm: 'Green Valley Farm' },
-                        { name: 'Fresh Lettuce', price: '$2.80/kg', farm: 'Sunrise Organics' },
-                        { name: 'Sweet Corn', price: '$0.75/ear', farm: 'Golden Fields' },
-                        { name: 'Strawberries', price: '$6.00/kg', farm: 'Berry Hills Farm' },
+                        { name: 'Organic Tomatoes', price: '₱250/kg', farm: 'Green Valley Farm' },
+                        { name: 'Fresh Lettuce', price: '₱150/kg', farm: 'Sunrise Organics' },
+                        { name: 'Sweet Corn', price: '₱40/ear', farm: 'Golden Fields' },
+                        { name: 'Strawberries', price: '₱320/kg', farm: 'Berry Hills Farm' },
                       ].map((c) => (
                         <div key={c.name} className="rounded-lg border border-gray-100 bg-white p-3">
                           <div className="mb-2 flex h-12 items-center justify-center rounded-lg bg-brand-50 text-xl">

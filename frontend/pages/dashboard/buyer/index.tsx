@@ -4,7 +4,7 @@ import Link from 'next/link';
 import {
   ShoppingCart,
   ClipboardList,
-  DollarSign,
+  Wallet,
   ArrowRight,
   Store,
 } from 'lucide-react';
@@ -49,7 +49,7 @@ export default function BuyerDashboard() {
     {
       label: 'Items in Cart',
       value: totalItems,
-      sub: cartTotal > 0 ? `$${cartTotal.toFixed(2)} total` : undefined,
+      sub: cartTotal > 0 ? `₱${cartTotal.toFixed(2)} total` : undefined,
       icon: ShoppingCart,
       color: 'bg-brand-700',
       href: '/dashboard/buyer/cart',
@@ -63,8 +63,8 @@ export default function BuyerDashboard() {
     },
     {
       label: 'Total Spent',
-      value: `$${totalSpent.toFixed(2)}`,
-      icon: DollarSign,
+      value: `₱${totalSpent.toFixed(2)}`,
+      icon: Wallet,
       color: 'bg-green-600',
     },
   ];
@@ -153,7 +153,7 @@ export default function BuyerDashboard() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-semibold text-gray-900">
-                          ${Number(order.total_price).toFixed(2)}
+                          ₱{Number(order.total_price).toFixed(2)}
                         </span>
                         <Badge variant={STATUS_BADGE[order.status]} dot>
                           {order.status}
