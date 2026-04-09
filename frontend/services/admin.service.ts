@@ -41,19 +41,9 @@ export async function getAdminOrders(): Promise<(Order & { buyer_name?: string }
 
   if (error) throw new Error(error.message);
 
-  const buyerIds = [...new Set((orders ?? []).map((o) => o.buyer_id))];
-  if (buyerIds.length === 0) return (orders ?? []) as (Order & { buyer_name?: string })[];
-
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, name')
-    .in('id', buyerIds);
-
-  const nameMap = new Map((profiles ?? []).map((p) => [p.id, p.name]));
-
   return (orders ?? []).map((o) => ({
     ...o,
-    buyer_name: nameMap.get(o.buyer_id) ?? undefined,
+    buyer_name: o.delivery_name || undefined,
   })) as (Order & { buyer_name?: string })[];
 }
 
