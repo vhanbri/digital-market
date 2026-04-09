@@ -1,12 +1,21 @@
 -- ============================================================
--- AniKo — Supabase Database Functions
--- Run this AFTER supabase_migration.sql
+-- AniKo — Order Delivery Enhancement Migration
+-- Run this AFTER supabase_migration.sql and supabase_functions.sql
 -- ============================================================
 
 -- ============================================================
--- 1. place_order — Transactional order creation
---    Called via: supabase.rpc('place_order', { p_items: [...] })
---    p_items is a JSONB array: [{ "crop_id": "uuid", "quantity": 1 }, ...]
+-- 1. Add delivery info columns to orders table
+-- ============================================================
+
+ALTER TABLE public.orders
+  ADD COLUMN IF NOT EXISTS delivery_name    VARCHAR(200),
+  ADD COLUMN IF NOT EXISTS delivery_address TEXT,
+  ADD COLUMN IF NOT EXISTS delivery_phone   VARCHAR(30),
+  ADD COLUMN IF NOT EXISTS delivery_notes   TEXT;
+
+-- ============================================================
+-- 2. Replace place_order function — auto-accepts valid orders
+--    and stores delivery information
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.place_order(
@@ -109,59 +118,6 @@ BEGIN
   ) INTO v_result
   FROM public.orders o
   WHERE o.id = v_order_id;
-
-  RETURN v_result;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- 2. admin_update_order_status — Admin-only status update
---    Called via: supabase.rpc('admin_update_order_status', { ... })
--- ============================================================
-
-CREATE OR REPLACE FUNCTION public.admin_update_order_status(
-  p_order_id UUID,
-  p_status   TEXT
-)
-RETURNS JSONB AS $$
-DECLARE
-  v_admin_id UUID := auth.uid();
-  v_role     TEXT;
-  v_order    RECORD;
-  v_result   JSONB;
-BEGIN
-  IF v_admin_id IS NULL THEN
-    RAISE EXCEPTION 'Not authenticated';
-  END IF;
-
-  SELECT role::TEXT INTO v_role FROM public.profiles WHERE id = v_admin_id;
-  IF v_role != 'admin' THEN
-    RAISE EXCEPTION 'Only admins can update order status';
-  END IF;
-
-  IF p_status NOT IN ('pending', 'accepted', 'rejected', 'delivered') THEN
-    RAISE EXCEPTION 'Invalid status: %', p_status;
-  END IF;
-
-  SELECT * INTO v_order FROM public.orders WHERE id = p_order_id;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Order not found';
-  END IF;
-
-  UPDATE public.orders
-  SET status = p_status::public.order_status
-  WHERE id = p_order_id;
-
-  SELECT jsonb_build_object(
-    'id', o.id,
-    'buyer_id', o.buyer_id,
-    'status', o.status,
-    'total_price', o.total_price,
-    'created_at', o.created_at,
-    'updated_at', o.updated_at
-  ) INTO v_result
-  FROM public.orders o
-  WHERE o.id = p_order_id;
 
   RETURN v_result;
 END;
