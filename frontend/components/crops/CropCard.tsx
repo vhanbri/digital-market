@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import toast from 'react-hot-toast';
 import { Calendar, ShoppingCart, Check } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useCart } from '../../hooks/useCart';
@@ -14,13 +16,28 @@ export const CropCard = ({ crop }: CropCardProps) => {
   const { isAuthenticated, user } = useAuth();
   const inCart = isInCart(crop.id);
   const outOfStock = crop.quantity === 0;
+  const lowStock = crop.quantity > 0 && crop.quantity <= 10;
   const isBuyer = isAuthenticated && user?.role === 'buyer';
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-md">
+    <div className={`group flex flex-col overflow-hidden rounded-xl border bg-white transition-shadow hover:shadow-md ${outOfStock ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}>
       <Link href={`/crop/${crop.id}`}>
-        <div className="flex h-40 items-center justify-center bg-brand-50 transition-colors group-hover:bg-brand-100">
-          <span className="text-4xl">🌾</span>
+        <div className="relative flex h-40 items-center justify-center overflow-hidden bg-brand-50 transition-colors group-hover:bg-brand-100">
+          {crop.image_url ? (
+            <Image src={crop.image_url} alt={crop.name} fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
+          ) : (
+            <span className="text-4xl">🌾</span>
+          )}
+          {outOfStock && (
+            <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              Sold Out
+            </span>
+          )}
+          {lowStock && (
+            <span className="absolute left-2 top-2 rounded-full bg-amber-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              Only {crop.quantity} left
+            </span>
+          )}
         </div>
       </Link>
 
@@ -52,10 +69,10 @@ export const CropCard = ({ crop }: CropCardProps) => {
                 </span>
               </div>
             )}
-            <div className={crop.quantity === 0 ? 'font-medium text-red-500' : ''}>
-              {crop.quantity > 0
-                ? `${crop.quantity} units available`
-                : 'Out of stock'}
+            <div className={outOfStock ? 'font-medium text-red-500' : lowStock ? 'font-medium text-amber-600' : ''}>
+              {outOfStock
+                ? 'Out of stock'
+                : `${crop.quantity} units available`}
             </div>
           </div>
 
@@ -67,7 +84,10 @@ export const CropCard = ({ crop }: CropCardProps) => {
               disabled={outOfStock || inCart}
               onClick={(e) => {
                 e.preventDefault();
-                if (!inCart && !outOfStock) addItem(crop);
+                if (!inCart && !outOfStock) {
+                  addItem(crop);
+                  toast.success(`${crop.name} added to cart`);
+                }
               }}
             >
               {inCart ? (

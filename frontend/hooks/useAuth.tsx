@@ -29,6 +29,7 @@ interface AuthContextValue {
     password: string;
     role: UserRole;
     location?: string;
+    phone?: string;
   }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -113,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: string;
       role: UserRole;
       location?: string;
+      phone?: string;
     }) => {
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
@@ -122,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: data.name,
             role: data.role,
             location: data.location || null,
+            phone: data.phone || null,
           },
         },
       });

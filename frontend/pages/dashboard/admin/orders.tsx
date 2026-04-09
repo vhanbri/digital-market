@@ -16,6 +16,9 @@ import { ADMIN_LINKS } from '../../../constants/admin';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
+import { Pagination } from '../../../components/ui/Pagination';
+
+const PAGE_SIZE = 10;
 import {
   getAdminOrders,
   getAdminOrderById,
@@ -32,14 +35,18 @@ const STATUS_BADGE: Record<OrderStatus, 'yellow' | 'green' | 'red' | 'gray'> = {
 
 const ALL_STATUSES: OrderStatus[] = ['pending', 'accepted', 'rejected', 'delivered'];
 
+type OrderWithBuyer = Order & { buyer_name?: string };
+
 export default function AdminOrders() {
   const router = useRouter();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filtered, setFiltered] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithBuyer[]>([]);
+  const [filtered, setFiltered] = useState<OrderWithBuyer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
+
+  const [page, setPage] = useState(0);
 
   const [detailOrder, setDetailOrder] = useState<OrderWithItems | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -79,7 +86,7 @@ export default function AdminOrders() {
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
-        (o) => o.id.toLowerCase().includes(q) || o.buyer_id.toLowerCase().includes(q),
+        (o) => o.id.toLowerCase().includes(q) || o.buyer_id.toLowerCase().includes(q) || (o.buyer_name ?? '').toLowerCase().includes(q),
       );
     }
     setFiltered(result);
@@ -179,7 +186,7 @@ export default function AdminOrders() {
             />
             <input
               type="text"
-              placeholder="Search by order ID or buyer ID..."
+              placeholder="Search by order ID or buyer name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
@@ -221,7 +228,7 @@ export default function AdminOrders() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.map((order) => (
+                  {filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((order) => (
                     <tr
                       key={order.id}
                       className="transition-colors hover:bg-gray-50/50"
@@ -232,8 +239,8 @@ export default function AdminOrders() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="font-mono text-xs text-gray-600">
-                          {order.buyer_id.slice(0, 8)}...
+                        <span className="text-sm text-gray-700">
+                          {order.buyer_name ?? order.buyer_id.slice(0, 8)}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
@@ -276,6 +283,11 @@ export default function AdminOrders() {
           )}
         </div>
 
+        <Pagination
+          currentPage={page}
+          totalPages={Math.ceil(filtered.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
         <p className="mt-3 text-right text-xs text-gray-400">
           Showing {filtered.length} of {orders.length} orders
         </p>

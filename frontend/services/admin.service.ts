@@ -33,14 +33,18 @@ export async function deleteUser(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-export async function getAdminOrders(): Promise<Order[]> {
-  const { data, error } = await supabase
+export async function getAdminOrders(): Promise<(Order & { buyer_name?: string })[]> {
+  const { data: orders, error } = await supabase
     .from('orders')
     .select('*')
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as Order[];
+
+  return (orders ?? []).map((o) => ({
+    ...o,
+    buyer_name: o.delivery_name || undefined,
+  })) as (Order & { buyer_name?: string })[];
 }
 
 export async function getAdminOrderById(id: string): Promise<OrderWithItems> {
@@ -77,6 +81,7 @@ export async function createAdminCrop(data: {
   quantity: number;
   harvest_date?: string;
   description?: string;
+  image_url?: string;
 }) {
   return createCrop(data);
 }
@@ -89,6 +94,7 @@ export async function updateAdminCrop(
     quantity?: number;
     harvest_date?: string;
     description?: string;
+    image_url?: string;
   },
 ) {
   return updateCrop(id, data);
@@ -105,6 +111,7 @@ export interface AdminStats {
   totalOrders: number;
   pendingOrders: number;
   totalCrops: number;
+  totalRevenue: number;
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
@@ -115,6 +122,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     { count: totalOrders },
     { count: pendingOrders },
     { count: totalCrops },
+    { data: revenueData },
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'farmer'),
@@ -122,7 +130,13 @@ export async function getAdminStats(): Promise<AdminStats> {
     supabase.from('orders').select('*', { count: 'exact', head: true }),
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('crops').select('*', { count: 'exact', head: true }),
+    supabase.from('orders').select('total_price').in('status', ['accepted', 'delivered']),
   ]);
+
+  const totalRevenue = (revenueData ?? []).reduce(
+    (sum: number, o: { total_price: number }) => sum + Number(o.total_price),
+    0,
+  );
 
   return {
     totalUsers: totalUsers ?? 0,
@@ -131,5 +145,17 @@ export async function getAdminStats(): Promise<AdminStats> {
     totalOrders: totalOrders ?? 0,
     pendingOrders: pendingOrders ?? 0,
     totalCrops: totalCrops ?? 0,
+    totalRevenue,
   };
+}
+
+export async function getRecentOrders(limit = 5): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Order[];
 }

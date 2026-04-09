@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowRight,
   Wheat,
@@ -190,14 +191,20 @@ const HomePage = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { name: 'Organic Tomatoes', price: '₱250/kg', farm: 'Green Valley Farm' },
-                        { name: 'Fresh Lettuce', price: '₱150/kg', farm: 'Sunrise Organics' },
-                        { name: 'Sweet Corn', price: '₱40/ear', farm: 'Golden Fields' },
-                        { name: 'Strawberries', price: '₱320/kg', farm: 'Berry Hills Farm' },
+                        { name: 'Organic Tomatoes', price: '₱250/kg', farm: 'Green Valley Farm', img: 'fresh-tomatoes.jpg' },
+                        { name: 'Fresh Lettuce', price: '₱150/kg', farm: 'Sunrise Organics', img: 'lettuce.jpg' },
+                        { name: 'Sweet Corn', price: '₱40/ear', farm: 'Golden Fields', img: 'sweet-corn.jpg' },
+                        { name: 'Strawberries', price: '₱320/kg', farm: 'Berry Hills Farm', img: 'fresh-strawberries.jpg' },
                       ].map((c) => (
                         <div key={c.name} className="rounded-lg border border-gray-100 bg-white p-3">
-                          <div className="mb-2 flex h-12 items-center justify-center rounded-lg bg-brand-50 text-xl">
-                            🌾
+                          <div className="relative mb-2 h-12 overflow-hidden rounded-lg">
+                            <Image
+                              src={`https://hcsngtrhscsntoazapuo.supabase.co/storage/v1/object/public/crop-images/${c.img}`}
+                              alt={c.name}
+                              fill
+                              className="object-cover"
+                              sizes="120px"
+                            />
                           </div>
                           <p className="text-xs font-medium text-gray-900">{c.name}</p>
                           <p className="text-[10px] text-gray-400">Sourced from {c.farm}</p>

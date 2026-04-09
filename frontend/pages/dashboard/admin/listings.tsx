@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Head from 'next/head';
-import { Search, Trash2, Eye, Pencil, Plus, Wheat } from 'lucide-react';
+import Image from 'next/image';
+import { Search, Trash2, Eye, Pencil, Plus, Wheat, Upload } from 'lucide-react';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { ADMIN_LINKS } from '../../../constants/admin';
 import { Badge } from '../../../components/ui/Badge';
@@ -13,6 +14,7 @@ import {
   updateAdminCrop,
   deleteAdminCrop,
 } from '../../../services/admin.service';
+import { uploadCropImage } from '../../../services/crop.service';
 import type { Crop } from '../../../types';
 
 interface CropFormData {
@@ -21,6 +23,7 @@ interface CropFormData {
   quantity: string;
   description: string;
   harvest_date: string;
+  image_url: string;
 }
 
 const EMPTY_FORM: CropFormData = {
@@ -29,6 +32,7 @@ const EMPTY_FORM: CropFormData = {
   quantity: '',
   description: '',
   harvest_date: '',
+  image_url: '',
 };
 
 export default function AdminListings() {
@@ -91,6 +95,7 @@ export default function AdminListings() {
       quantity: String(crop.quantity),
       description: crop.description ?? '',
       harvest_date: crop.harvest_date ? crop.harvest_date.split('T')[0] : '',
+      image_url: crop.image_url ?? '',
     });
     setFormError(null);
     setEditCrop(crop);
@@ -110,6 +115,7 @@ export default function AdminListings() {
         quantity: parseInt(form.quantity, 10),
         description: form.description.trim() || undefined,
         harvest_date: form.harvest_date || undefined,
+        image_url: form.image_url || undefined,
       });
       setCrops((prev) => [created, ...prev]);
       setTotal((t) => t + 1);
@@ -136,6 +142,7 @@ export default function AdminListings() {
         quantity: parseInt(form.quantity, 10),
         description: form.description.trim() || undefined,
         harvest_date: form.harvest_date || undefined,
+        image_url: form.image_url || undefined,
       });
       setCrops((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       setEditCrop(null);
@@ -239,9 +246,13 @@ export default function AdminListings() {
                     <tr key={crop.id} className="transition-colors hover:bg-gray-50/50">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-600">
-                            <Wheat size={16} />
-                          </div>
+                          {crop.image_url ? (
+                            <Image src={crop.image_url} alt={crop.name} width={36} height={36} className="h-9 w-9 rounded-lg object-cover" />
+                          ) : (
+                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-600">
+                              <Wheat size={16} />
+                            </div>
+                          )}
                           <div>
                             <p className="font-medium text-gray-900">{crop.name}</p>
                             {crop.description && (
@@ -323,9 +334,13 @@ export default function AdminListings() {
           {selectedCrop && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-green-50 text-green-600">
-                  <Wheat size={24} />
-                </div>
+                {selectedCrop.image_url ? (
+                  <Image src={selectedCrop.image_url} alt={selectedCrop.name} width={56} height={56} className="h-14 w-14 rounded-xl object-cover" />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-green-50 text-green-600">
+                    <Wheat size={24} />
+                  </div>
+                )}
                 <div>
                   <p className="text-lg font-semibold text-gray-900">{selectedCrop.name}</p>
                   <p className="text-sm text-gray-500">{selectedCrop.description ?? 'No description'}</p>
@@ -424,6 +439,22 @@ function CropForm({
   onCancel: () => void;
   submitLabel: string;
 }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const url = await uploadCropImage(file);
+      onChange('image_url', url);
+    } catch (err: any) {
+      alert(err.message ?? 'Image upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {error && (
@@ -438,7 +469,7 @@ function CropForm({
       />
       <div className="grid grid-cols-2 gap-3">
         <FormInput
-          label="Price ($)"
+          label="Price (₱)"
           type="number"
           step="0.01"
           min="0"
@@ -474,9 +505,32 @@ function CropForm({
           className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-600"
         />
       </div>
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">Product Image</label>
+        <div className="flex items-center gap-3">
+          {form.image_url ? (
+            <Image src={form.image_url} alt="Preview" width={64} height={64} className="h-16 w-16 rounded-lg object-cover" />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+              <Wheat size={24} />
+            </div>
+          )}
+          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+            <Upload size={14} />
+            {uploading ? 'Uploading...' : 'Upload Image'}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageUpload}
+              disabled={uploading}
+              className="hidden"
+            />
+          </label>
+        </div>
+      </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button variant="outline" size="sm" onClick={onCancel}>Cancel</Button>
-        <Button size="sm" onClick={onSubmit} disabled={submitting}>
+        <Button size="sm" onClick={onSubmit} disabled={submitting || uploading}>
           {submitting ? 'Saving...' : submitLabel}
         </Button>
       </div>

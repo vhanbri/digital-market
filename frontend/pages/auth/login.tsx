@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Sprout, Loader2 } from 'lucide-react';
+import { Sprout, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { FormInput } from '../../components/ui/FormInput';
 import { useAuth } from '../../hooks/useAuth';
@@ -37,6 +37,13 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+        >
+          <ArrowLeft size={16} />
+          Back to Home
+        </Link>
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-800">
@@ -103,21 +110,6 @@ const LoginPage = () => {
           </Link>
         </p>
 
-        <div className="mt-6 rounded-lg border border-gray-100 bg-gray-50 p-4">
-          <p className="mb-2 text-xs font-medium text-gray-500">
-            Demo accounts:
-          </p>
-          <div className="space-y-1 text-xs text-gray-500">
-            <p>
-              <span className="font-medium text-gray-700">Admin:</span>{' '}
-              admin@aniko.ph / admin123
-            </p>
-            <p>
-              <span className="font-medium text-gray-700">Buyer:</span>{' '}
-              ana@buyer.com / buyer123
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

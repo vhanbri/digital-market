@@ -11,9 +11,10 @@ export interface SidebarLink {
 interface SidebarProps {
   links: SidebarLink[];
   title: string;
+  onNavigate?: () => void;
 }
 
-export const Sidebar = ({ links, title }: SidebarProps) => {
+export const Sidebar = ({ links, title, onNavigate }: SidebarProps) => {
   const router = useRouter();
 
   return (
@@ -31,6 +32,7 @@ export const Sidebar = ({ links, title }: SidebarProps) => {
             <Link
               key={link.href}
               href={link.href}
+              onClick={onNavigate}
               className={`
                 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
                 ${

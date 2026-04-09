@@ -1,9 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, SlidersHorizontal, Wheat, X } from 'lucide-react';
+import { Search, SlidersHorizontal, Wheat, X, ArrowUpDown } from 'lucide-react';
 import { CropCard } from '../crops/CropCard';
 import { Button } from '../ui/Button';
 import { getCrops } from '../../services/crop.service';
+import type { CropSortOption } from '../../services/crop.service';
 import type { Crop } from '../../types';
+
+const SORT_OPTIONS: { value: CropSortOption; label: string }[] = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'name_asc', label: 'Name: A-Z' },
+];
 
 const PAGE_SIZE = 12;
 
@@ -19,6 +27,7 @@ export default function MarketplaceContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  const [sortBy, setSortBy] = useState<CropSortOption>('newest');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -35,6 +44,7 @@ export default function MarketplaceContent() {
         search: debouncedSearch || undefined,
         minPrice: minPrice ? parseFloat(minPrice) : undefined,
         maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+        sortBy,
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
       });
@@ -48,7 +58,7 @@ export default function MarketplaceContent() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, minPrice, maxPrice, page]);
+  }, [debouncedSearch, minPrice, maxPrice, sortBy, page]);
 
   useEffect(() => {
     fetchCrops();
@@ -106,6 +116,18 @@ export default function MarketplaceContent() {
                 </span>
               )}
             </button>
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown size={14} className="text-gray-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value as CropSortOption); setPage(0); }}
+                className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm text-gray-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
             <p className="text-sm text-gray-400">
               {total} {total === 1 ? 'product' : 'products'}
             </p>
@@ -119,7 +141,7 @@ export default function MarketplaceContent() {
                 htmlFor="filter-min"
                 className="block text-xs font-medium text-gray-500"
               >
-                Min Price ($)
+                Min Price (₱)
               </label>
               <input
                 id="filter-min"
@@ -140,7 +162,7 @@ export default function MarketplaceContent() {
                 htmlFor="filter-max"
                 className="block text-xs font-medium text-gray-500"
               >
-                Max Price ($)
+                Max Price (₱)
               </label>
               <input
                 id="filter-max"
