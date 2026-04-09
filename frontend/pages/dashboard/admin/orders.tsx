@@ -32,10 +32,12 @@ const STATUS_BADGE: Record<OrderStatus, 'yellow' | 'green' | 'red' | 'gray'> = {
 
 const ALL_STATUSES: OrderStatus[] = ['pending', 'accepted', 'rejected', 'delivered'];
 
+type OrderWithBuyer = Order & { profiles?: { name: string } };
+
 export default function AdminOrders() {
   const router = useRouter();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filtered, setFiltered] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithBuyer[]>([]);
+  const [filtered, setFiltered] = useState<OrderWithBuyer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -79,7 +81,7 @@ export default function AdminOrders() {
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
-        (o) => o.id.toLowerCase().includes(q) || o.buyer_id.toLowerCase().includes(q),
+        (o) => o.id.toLowerCase().includes(q) || o.buyer_id.toLowerCase().includes(q) || (o.profiles?.name ?? '').toLowerCase().includes(q),
       );
     }
     setFiltered(result);
@@ -179,7 +181,7 @@ export default function AdminOrders() {
             />
             <input
               type="text"
-              placeholder="Search by order ID or buyer ID..."
+              placeholder="Search by order ID or buyer name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
@@ -232,8 +234,8 @@ export default function AdminOrders() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="font-mono text-xs text-gray-600">
-                          {order.buyer_id.slice(0, 8)}...
+                        <span className="text-sm text-gray-700">
+                          {order.profiles?.name ?? order.buyer_id.slice(0, 8)}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">

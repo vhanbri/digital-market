@@ -33,14 +33,14 @@ export async function deleteUser(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-export async function getAdminOrders(): Promise<Order[]> {
+export async function getAdminOrders(): Promise<(Order & { profiles?: { name: string } })[]> {
   const { data, error } = await supabase
     .from('orders')
-    .select('*')
+    .select('*, profiles!buyer_id(name)')
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as Order[];
+  return (data ?? []) as (Order & { profiles?: { name: string } })[];
 }
 
 export async function getAdminOrderById(id: string): Promise<OrderWithItems> {
