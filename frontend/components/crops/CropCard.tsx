@@ -14,13 +14,24 @@ export const CropCard = ({ crop }: CropCardProps) => {
   const { isAuthenticated, user } = useAuth();
   const inCart = isInCart(crop.id);
   const outOfStock = crop.quantity === 0;
+  const lowStock = crop.quantity > 0 && crop.quantity <= 10;
   const isBuyer = isAuthenticated && user?.role === 'buyer';
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-md">
+    <div className={`group flex flex-col overflow-hidden rounded-xl border bg-white transition-shadow hover:shadow-md ${outOfStock ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}>
       <Link href={`/crop/${crop.id}`}>
-        <div className="flex h-40 items-center justify-center bg-brand-50 transition-colors group-hover:bg-brand-100">
+        <div className="relative flex h-40 items-center justify-center bg-brand-50 transition-colors group-hover:bg-brand-100">
           <span className="text-4xl">🌾</span>
+          {outOfStock && (
+            <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              Sold Out
+            </span>
+          )}
+          {lowStock && (
+            <span className="absolute left-2 top-2 rounded-full bg-amber-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              Only {crop.quantity} left
+            </span>
+          )}
         </div>
       </Link>
 
@@ -52,10 +63,10 @@ export const CropCard = ({ crop }: CropCardProps) => {
                 </span>
               </div>
             )}
-            <div className={crop.quantity === 0 ? 'font-medium text-red-500' : ''}>
-              {crop.quantity > 0
-                ? `${crop.quantity} units available`
-                : 'Out of stock'}
+            <div className={outOfStock ? 'font-medium text-red-500' : lowStock ? 'font-medium text-amber-600' : ''}>
+              {outOfStock
+                ? 'Out of stock'
+                : `${crop.quantity} units available`}
             </div>
           </div>
 
