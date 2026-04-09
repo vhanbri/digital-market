@@ -27,6 +27,10 @@ export interface Order {
   buyer_id: string;
   status: OrderStatus;
   total_price: number;
+  delivery_name: string | null;
+  delivery_address: string | null;
+  delivery_phone: string | null;
+  delivery_notes: string | null;
   created_at: string;
   updated_at: string;
 }
