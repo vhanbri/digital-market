@@ -6,7 +6,10 @@ import {
   Eye,
   ChevronDown,
   Package,
-  DollarSign,
+  MapPin,
+  Phone,
+  User,
+  FileText,
 } from 'lucide-react';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { ADMIN_LINKS } from '../../../constants/admin';
@@ -235,7 +238,7 @@ export default function AdminOrders() {
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="font-semibold text-gray-900">
-                          ${Number(order.total_price).toFixed(2)}
+                          ₱{Number(order.total_price).toFixed(2)}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
@@ -297,7 +300,7 @@ export default function AdminOrders() {
                 <DetailItem label="Buyer ID" value={detailOrder.buyer_id} />
                 <DetailItem
                   label="Total"
-                  value={`$${Number(detailOrder.total_price).toFixed(2)}`}
+                  value={`₱${Number(detailOrder.total_price).toFixed(2)}`}
                 />
                 <DetailItem label="Status" value={detailOrder.status} />
                 <DetailItem
@@ -309,6 +312,40 @@ export default function AdminOrders() {
                   value={new Date(detailOrder.updated_at).toLocaleString()}
                 />
               </div>
+
+              {(detailOrder.delivery_name || detailOrder.delivery_address || detailOrder.delivery_phone) && (
+                <div>
+                  <h4 className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                    Buyer / Delivery Information
+                  </h4>
+                  <div className="space-y-2 rounded-lg border border-gray-100 p-4">
+                    {detailOrder.delivery_name && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <User size={14} className="shrink-0 text-gray-400" />
+                        <span className="font-medium text-gray-700">{detailOrder.delivery_name}</span>
+                      </div>
+                    )}
+                    {detailOrder.delivery_address && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <MapPin size={14} className="mt-0.5 shrink-0 text-gray-400" />
+                        <span className="text-gray-700">{detailOrder.delivery_address}</span>
+                      </div>
+                    )}
+                    {detailOrder.delivery_phone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone size={14} className="shrink-0 text-gray-400" />
+                        <span className="text-gray-700">{detailOrder.delivery_phone}</span>
+                      </div>
+                    )}
+                    {detailOrder.delivery_notes && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <FileText size={14} className="mt-0.5 shrink-0 text-gray-400" />
+                        <span className="text-gray-600 italic">{detailOrder.delivery_notes}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {detailOrder.items.length > 0 && (
                 <div>
@@ -333,8 +370,7 @@ export default function AdminOrders() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 text-sm font-semibold text-gray-900">
-                          <DollarSign size={14} />
-                          {(Number(item.price) * item.quantity).toFixed(2)}
+                          ₱{(Number(item.price) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}
