@@ -16,6 +16,7 @@ interface AuthUser {
   email: string;
   role: UserRole;
   location: string | null;
+  phone: string | null;
 }
 
 interface AuthContextValue {
@@ -43,7 +44,7 @@ const ROLE_DASHBOARDS: Record<string, string> = {
 async function fetchProfile(userId: string): Promise<AuthUser | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, email, role, location')
+    .select('id, name, email, role, location, phone')
     .eq('id', userId)
     .single();
 
