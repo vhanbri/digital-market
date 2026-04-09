@@ -77,6 +77,7 @@ export async function createAdminCrop(data: {
   quantity: number;
   harvest_date?: string;
   description?: string;
+  image_url?: string;
 }) {
   return createCrop(data);
 }
@@ -89,6 +90,7 @@ export async function updateAdminCrop(
     quantity?: number;
     harvest_date?: string;
     description?: string;
+    image_url?: string;
   },
 ) {
   return updateCrop(id, data);

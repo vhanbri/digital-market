@@ -18,6 +18,7 @@ export interface Crop {
   price: number;
   quantity: number;
   harvest_date: string | null;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }

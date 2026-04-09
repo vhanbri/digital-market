@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft,
   ShoppingCart,
@@ -92,8 +93,12 @@ export default function CropDetailPage() {
           {crop && !loading && (
             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               {/* Image */}
-              <div className="flex h-64 items-center justify-center bg-gradient-to-br from-brand-50 to-green-50 sm:h-80">
-                <span className="text-7xl">🌾</span>
+              <div className="relative flex h-64 items-center justify-center overflow-hidden bg-gradient-to-br from-brand-50 to-green-50 sm:h-80">
+                {crop.image_url ? (
+                  <Image src={crop.image_url} alt={crop.name} fill className="object-cover" sizes="(max-width: 896px) 100vw, 896px" priority />
+                ) : (
+                  <span className="text-7xl">🌾</span>
+                )}
               </div>
 
               <div className="p-6 sm:p-8">

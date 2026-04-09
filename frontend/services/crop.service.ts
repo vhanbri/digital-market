@@ -1,6 +1,25 @@
 import { supabase } from '../lib/supabase';
 import type { Crop, PaginatedCrops } from '../types';
 
+const CROP_IMAGES_BUCKET = 'crop-images';
+
+export async function uploadCropImage(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() ?? 'jpg';
+  const path = `${crypto.randomUUID()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(CROP_IMAGES_BUCKET)
+    .upload(path, file, { upsert: false });
+
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage
+    .from(CROP_IMAGES_BUCKET)
+    .getPublicUrl(path);
+
+  return data.publicUrl;
+}
+
 interface CropFilters {
   search?: string;
   minPrice?: number;
@@ -60,6 +79,7 @@ export async function createCrop(payload: {
   quantity: number;
   harvest_date?: string;
   description?: string;
+  image_url?: string;
 }): Promise<Crop> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
@@ -73,6 +93,7 @@ export async function createCrop(payload: {
       quantity: payload.quantity,
       harvest_date: payload.harvest_date || null,
       description: payload.description || null,
+      image_url: payload.image_url || null,
     })
     .select()
     .single();
@@ -89,6 +110,7 @@ export async function updateCrop(
     quantity?: number;
     harvest_date?: string;
     description?: string;
+    image_url?: string;
   },
 ): Promise<Crop> {
   const updateData: Record<string, unknown> = {};
@@ -97,6 +119,7 @@ export async function updateCrop(
   if (payload.quantity !== undefined) updateData.quantity = payload.quantity;
   if (payload.harvest_date !== undefined) updateData.harvest_date = payload.harvest_date || null;
   if (payload.description !== undefined) updateData.description = payload.description || null;
+  if (payload.image_url !== undefined) updateData.image_url = payload.image_url || null;
 
   const { data, error } = await supabase
     .from('crops')
