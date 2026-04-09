@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import toast from 'react-hot-toast';
 import { Save, Loader2 } from 'lucide-react';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { BUYER_LINKS } from '../../../constants/navigation';
@@ -14,8 +15,6 @@ export default function BuyerProfile() {
   const [location, setLocation] = useState('');
   const [phone, setPhone] = useState('');
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -28,22 +27,19 @@ export default function BuyerProfile() {
   const handleSave = async () => {
     if (!user) return;
     if (!name.trim()) {
-      setError('Name is required.');
+      toast.error('Name is required.');
       return;
     }
     try {
       setSaving(true);
-      setError(null);
-      setSuccess(false);
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ name: name.trim(), location: location.trim() || null, phone: phone.trim() || null })
         .eq('id', user.id);
       if (updateError) throw new Error(updateError.message);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      toast.success('Profile updated successfully!');
     } catch (err: any) {
-      setError(err.message ?? 'Failed to update profile');
+      toast.error(err.message ?? 'Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -61,17 +57,6 @@ export default function BuyerProfile() {
         allowedRoles={['buyer']}
       >
         <div className="mx-auto max-w-lg">
-          {error && (
-            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              Profile updated successfully!
-            </div>
-          )}
-
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-6">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-2xl font-bold text-brand-800">

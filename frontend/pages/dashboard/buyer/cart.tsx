@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import {
   Trash2,
   Minus,

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 import { Calendar, ShoppingCart, Check } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useCart } from '../../hooks/useCart';
@@ -83,7 +84,10 @@ export const CropCard = ({ crop }: CropCardProps) => {
               disabled={outOfStock || inCart}
               onClick={(e) => {
                 e.preventDefault();
-                if (!inCart && !outOfStock) addItem(crop);
+                if (!inCart && !outOfStock) {
+                  addItem(crop);
+                  toast.success(`${crop.name} added to cart`);
+                }
               }}
             >
               {inCart ? (
