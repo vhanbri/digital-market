@@ -23,6 +23,15 @@ import { Modal } from '../../../components/ui/Modal';
 import { useCart } from '../../../hooks/useCart';
 import { useAuth } from '../../../hooks/useAuth';
 import { placeOrder } from '../../../services/order.service';
+import type { CartItem } from '../../../hooks/useCart';
+import type { OrderWithItems } from '../../../types';
+
+interface ReceiptData {
+  order: OrderWithItems;
+  cartSnapshot: CartItem[];
+  deliveryName: string;
+  deliveryAddress: string;
+}
 
 export default function BuyerCart() {
   const router = useRouter();
@@ -31,7 +40,7 @@ export default function BuyerCart() {
     useCart();
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
 
@@ -65,7 +74,8 @@ export default function BuyerCart() {
     try {
       setPlacing(true);
       setError(null);
-      await placeOrder(
+      const snapshot = [...items];
+      const order = await placeOrder(
         items.map((i) => ({ crop_id: i.crop.id, quantity: i.quantity })),
         {
           name: deliveryName.trim(),
@@ -76,7 +86,7 @@ export default function BuyerCart() {
       );
       clearCart();
       setShowCheckout(false);
-      setShowSuccess(true);
+      setReceipt({ order, cartSnapshot: snapshot, deliveryName: deliveryName.trim(), deliveryAddress: deliveryAddress.trim() });
     } catch (err: any) {
       setError(err.message ?? 'Failed to place order');
     } finally {
@@ -219,7 +229,7 @@ export default function BuyerCart() {
               </div>
             </div>
           </div>
-        ) : items.length === 0 && !showSuccess ? (
+        ) : items.length === 0 && !receipt ? (
           <div className="rounded-xl border border-gray-200 bg-white px-6 py-16 text-center">
             <ShoppingBag size={48} className="mx-auto mb-4 text-gray-300" />
             <p className="mb-1 text-lg font-medium text-gray-700">Your cart is empty</p>
@@ -233,7 +243,7 @@ export default function BuyerCart() {
               </Button>
             </Link>
           </div>
-        ) : !showSuccess ? (
+        ) : !receipt ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -339,36 +349,51 @@ export default function BuyerCart() {
           </div>
         ) : null}
 
-        {/* Success Modal */}
+        {/* Receipt Modal */}
         <Modal
-          isOpen={showSuccess}
-          onClose={() => { setShowSuccess(false); router.push('/dashboard/buyer/orders'); }}
+          isOpen={!!receipt}
+          onClose={() => { setReceipt(null); router.push('/dashboard/buyer/orders'); }}
           title="Order Confirmed!"
         >
-          <div className="py-4 text-center">
-            <CheckCircle size={48} className="mx-auto mb-4 text-green-500" />
-            <p className="mb-2 text-lg font-semibold text-gray-900">
-              Your order has been accepted!
-            </p>
-            <p className="mb-6 text-sm text-gray-500">
-              Your order was validated and automatically accepted.
-              Stock has been reserved for your items. You can track the delivery
-              status in your orders page.
-            </p>
-            <div className="flex justify-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => { setShowSuccess(false); router.push('/marketplace'); }}
-              >
-                Continue Shopping
-              </Button>
-              <Button
-                onClick={() => { setShowSuccess(false); router.push('/dashboard/buyer/orders'); }}
-              >
-                View Orders
-              </Button>
+          {receipt && (
+            <div className="space-y-4">
+              <div className="flex flex-col items-center py-2">
+                <CheckCircle size={40} className="mb-2 text-green-500" />
+                <p className="text-lg font-semibold text-gray-900">Thank you for your order!</p>
+                <p className="text-xs text-gray-400">Order #{receipt.order.id.slice(0, 8)}</p>
+              </div>
+
+              <div className="divide-y divide-gray-100 rounded-lg border border-gray-100">
+                {receipt.cartSnapshot.map((item) => (
+                  <div key={item.crop.id} className="flex items-center justify-between px-4 py-2.5">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">{item.crop.name}</p>
+                      <p className="text-xs text-gray-400">Qty: {item.quantity} x ₱{Number(item.crop.price).toFixed(2)}</p>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">₱{(item.quantity * item.crop.price).toFixed(2)}</p>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between bg-gray-50 px-4 py-3">
+                  <p className="text-sm font-semibold text-gray-700">Total</p>
+                  <p className="text-lg font-bold text-brand-800">₱{Number(receipt.order.total_price).toFixed(2)}</p>
+                </div>
+              </div>
+
+              <div className="rounded-lg bg-gray-50 px-4 py-3 text-xs text-gray-500">
+                <p><span className="font-medium text-gray-700">Deliver to:</span> {receipt.deliveryName}</p>
+                <p>{receipt.deliveryAddress}</p>
+              </div>
+
+              <div className="flex justify-center gap-3 pt-2">
+                <Button variant="outline" onClick={() => { setReceipt(null); router.push('/marketplace'); }}>
+                  Continue Shopping
+                </Button>
+                <Button onClick={() => { setReceipt(null); router.push('/dashboard/buyer/orders'); }}>
+                  View Orders
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </Modal>
 
         {/* Clear Cart Confirmation */}
