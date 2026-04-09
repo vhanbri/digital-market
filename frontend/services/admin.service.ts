@@ -54,7 +54,7 @@ export async function getAdminOrderById(id: string): Promise<OrderWithItems> {
 
   const { data: items, error: itemsError } = await supabase
     .from('order_items')
-    .select('*')
+    .select('*, crops(name)')
     .eq('order_id', id);
 
   if (itemsError) throw new Error(itemsError.message);

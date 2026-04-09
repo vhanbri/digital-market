@@ -39,7 +39,7 @@ export async function getMyOrders(): Promise<Order[]> {
 export async function getOrderItems(orderId: string): Promise<OrderItem[]> {
   const { data, error } = await supabase
     .from('order_items')
-    .select('*')
+    .select('*, crops(name)')
     .eq('order_id', orderId);
 
   if (error) throw new Error(error.message);

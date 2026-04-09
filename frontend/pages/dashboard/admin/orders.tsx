@@ -361,8 +361,8 @@ export default function AdminOrders() {
                         <div className="flex items-center gap-3">
                           <Package size={16} className="text-gray-400" />
                           <div>
-                            <p className="font-mono text-xs text-gray-600">
-                              Crop: {item.crop_id.slice(0, 8)}...
+                            <p className="text-sm font-medium text-gray-700">
+                              {item.crops?.name ?? `Crop ${item.crop_id.slice(0, 8)}`}
                             </p>
                             <p className="text-xs text-gray-400">
                               Qty: {item.quantity}
