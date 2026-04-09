@@ -57,14 +57,19 @@ export default function BuyerProfile() {
         allowedRoles={['buyer']}
       >
         <div className="mx-auto max-w-lg">
+          {!user ? (
+            <div className="flex justify-center py-16">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+            </div>
+          ) : (
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-6">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-2xl font-bold text-brand-800">
-                {(user?.name ?? '?')[0].toUpperCase()}
+                {(user.name || '?').charAt(0).toUpperCase()}
               </div>
-              <p className="mt-3 text-sm text-gray-500">{user?.email}</p>
+              <p className="mt-3 text-sm text-gray-500">{user.email}</p>
               <span className="mt-1 inline-block rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-700">
-                {user?.role}
+                {user.role}
               </span>
             </div>
 
@@ -118,6 +123,7 @@ export default function BuyerProfile() {
               </Button>
             </div>
           </div>
+          )}
         </div>
       </DashboardLayout>
     </>
