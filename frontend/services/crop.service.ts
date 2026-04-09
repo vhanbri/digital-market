@@ -20,10 +20,13 @@ export async function uploadCropImage(file: File): Promise<string> {
   return data.publicUrl;
 }
 
+export type CropSortOption = 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
+
 interface CropFilters {
   search?: string;
   minPrice?: number;
   maxPrice?: number;
+  sortBy?: CropSortOption;
   limit?: number;
   offset?: number;
 }
@@ -46,9 +49,22 @@ export async function getCrops(filters?: CropFilters): Promise<PaginatedCrops> {
     query = query.lte('price', filters.maxPrice);
   }
 
-  query = query
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+  const sortBy = filters?.sortBy ?? 'newest';
+  switch (sortBy) {
+    case 'price_asc':
+      query = query.order('price', { ascending: true });
+      break;
+    case 'price_desc':
+      query = query.order('price', { ascending: false });
+      break;
+    case 'name_asc':
+      query = query.order('name', { ascending: true });
+      break;
+    default:
+      query = query.order('created_at', { ascending: false });
+  }
+
+  query = query.range(offset, offset + limit - 1);
 
   const { data, error, count } = await query;
 
