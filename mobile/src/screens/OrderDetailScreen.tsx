@@ -10,9 +10,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { getMyOrders, getOrderItems } from '../services/order.service';
-import { getCropById } from '../services/crop.service';
 import { colors, spacing, fontSize } from '../constants/theme';
-import type { Order, OrderItem, OrderStatus, Crop } from '../types';
+import type { Order, OrderItem, OrderStatus } from '../types';
 import type { AppStackParamList } from '../navigation/types';
 
 const STEPS: { status: OrderStatus; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
@@ -33,16 +32,12 @@ function getStepIndex(status: OrderStatus): number {
   return STEPS.findIndex((s) => s.status === status);
 }
 
-interface ItemWithCrop extends OrderItem {
-  crop?: Crop;
-}
-
 export default function OrderDetailScreen() {
   const route = useRoute<RouteProp<AppStackParamList, 'OrderDetail'>>();
   const { orderId } = route.params;
 
   const [order, setOrder] = useState<Order | null>(null);
-  const [items, setItems] = useState<ItemWithCrop[]>([]);
+  const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -54,18 +49,7 @@ export default function OrderDetailScreen() {
       ]);
       const found = allOrders.find((o) => o.id === orderId) ?? null;
       setOrder(found);
-
-      const enriched: ItemWithCrop[] = await Promise.all(
-        orderItems.map(async (item) => {
-          try {
-            const crop = await getCropById(item.crop_id);
-            return { ...item, crop };
-          } catch {
-            return item;
-          }
-        }),
-      );
-      setItems(enriched);
+      setItems(orderItems);
     } catch { /* empty */ } finally {
       setLoading(false);
       setRefreshing(false);
@@ -165,7 +149,7 @@ export default function OrderDetailScreen() {
         {items.map((item) => (
           <View key={item.id} style={styles.itemRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.itemName}>{item.crop?.name ?? 'Unknown crop'}</Text>
+              <Text style={styles.itemName}>{item.crops?.name ?? 'Unknown crop'}</Text>
               <Text style={styles.itemMeta}>Qty: {item.quantity} x ₱{item.price.toFixed(2)}</Text>
             </View>
             <Text style={styles.itemTotal}>₱{(item.quantity * item.price).toFixed(2)}</Text>

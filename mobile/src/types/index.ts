@@ -41,6 +41,7 @@ export interface OrderItem {
   crop_id: string;
   quantity: number;
   price: number;
+  crops?: { name: string };
 }
 
 export interface CartItem {

@@ -53,6 +53,11 @@ export default function CartScreen() {
       Alert.alert('Missing Info', 'Please fill in your name, delivery address, and phone number.');
       return;
     }
+    const digitsOnly = deliveryPhone.replace(/\D/g, '');
+    if (digitsOnly.length < 10 || digitsOnly.length > 13) {
+      Alert.alert('Invalid Phone', 'Please enter a valid phone number (10-13 digits).');
+      return;
+    }
     try {
       setPlacing(true);
       const order = await placeOrder(
@@ -67,7 +72,7 @@ export default function CartScreen() {
       const total = totalPrice;
       clearCart();
       setShowCheckout(false);
-      setConfirmation({ orderId: order.id ?? '', total });
+      setConfirmation({ orderId: order.id, total });
     } catch (err: any) {
       Alert.alert('Order Failed', err.message || 'Something went wrong.');
     } finally {

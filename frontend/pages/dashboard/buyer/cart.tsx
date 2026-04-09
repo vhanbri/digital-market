@@ -40,9 +40,13 @@ export default function BuyerCart() {
   const [deliveryNotes, setDeliveryNotes] = useState('');
 
   const openCheckout = () => {
-    setDeliveryName(user?.name ?? '');
-    setDeliveryAddress(user?.location ?? '');
-    setDeliveryPhone(user?.phone ?? '');
+    if (!user) {
+      setError('Please log in to place an order.');
+      return;
+    }
+    setDeliveryName(user.name ?? '');
+    setDeliveryAddress(user.location ?? '');
+    setDeliveryPhone(user.phone ?? '');
     setDeliveryNotes('');
     setShowCheckout(true);
   };
@@ -50,6 +54,11 @@ export default function BuyerCart() {
   const handleConfirmOrder = async () => {
     if (!deliveryName.trim() || !deliveryAddress.trim() || !deliveryPhone.trim()) {
       setError('Please fill in your name, delivery address, and phone number.');
+      return;
+    }
+    const digitsOnly = deliveryPhone.replace(/\D/g, '');
+    if (digitsOnly.length < 10 || digitsOnly.length > 13) {
+      setError('Please enter a valid phone number (10-13 digits).');
       return;
     }
     try {

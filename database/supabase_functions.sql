@@ -4,9 +4,13 @@
 -- ============================================================
 
 -- ============================================================
--- 1. place_order — Transactional order creation
---    Called via: supabase.rpc('place_order', { p_items: [...] })
+-- 1. place_order — Transactional order creation (auto-accepts valid orders)
+--    Called via: supabase.rpc('place_order', { p_items: [...], ... })
 --    p_items is a JSONB array: [{ "crop_id": "uuid", "quantity": 1 }, ...]
+--
+--    NOTE: The latest version of this function lives in
+--    supabase_order_delivery.sql. If you modify place_order,
+--    update BOTH files to keep them in sync.
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.place_order(
