@@ -11,6 +11,7 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [location, setLocation] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,6 +36,7 @@ const RegisterPage = () => {
         password,
         role: 'buyer',
         location: location || undefined,
+        phone: phone || undefined,
       });
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -102,6 +104,14 @@ const RegisterPage = () => {
             placeholder="City or region (optional)"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+          />
+          <FormInput
+            label="Phone Number"
+            type="tel"
+            placeholder="e.g. 09171234567 (optional)"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            autoComplete="tel"
           />
 
           <Button type="submit" fullWidth disabled={submitting}>
