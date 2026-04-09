@@ -8,10 +8,21 @@ import {
   TrendingUp,
   UserCheck,
   Clock,
+  Wallet,
+  ArrowRight,
 } from 'lucide-react';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { ADMIN_LINKS } from '../../../constants/admin';
-import { getAdminStats, AdminStats } from '../../../services/admin.service';
+import { Badge } from '../../../components/ui/Badge';
+import { getAdminStats, getRecentOrders, AdminStats } from '../../../services/admin.service';
+import type { Order, OrderStatus } from '../../../types';
+
+const STATUS_BADGE: Record<OrderStatus, 'yellow' | 'green' | 'red' | 'gray'> = {
+  pending: 'yellow',
+  accepted: 'green',
+  rejected: 'red',
+  delivered: 'gray',
+};
 
 function StatCard({
   icon: Icon,
@@ -42,12 +53,16 @@ function StatCard({
 
 export default function AdminOverview() {
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getAdminStats()
       .then(setStats)
       .catch((err) => setError(err.message));
+    getRecentOrders(5)
+      .then(setRecentOrders)
+      .catch(() => {});
   }, []);
 
   return (
@@ -111,7 +126,41 @@ export default function AdminOverview() {
                 color="bg-green-600"
                 href="/dashboard/admin/listings"
               />
+              <StatCard
+                icon={Wallet}
+                label="Total Revenue"
+                value={`₱${stats.totalRevenue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`}
+                color="bg-emerald-600"
+              />
             </div>
+
+            {recentOrders.length > 0 && (
+              <div className="mt-8 rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                  <h3 className="text-sm font-semibold text-gray-900">Recent Orders</h3>
+                  <Link
+                    href="/dashboard/admin/orders"
+                    className="flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-900"
+                  >
+                    View all <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {recentOrders.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between px-6 py-3.5">
+                      <div>
+                        <p className="font-mono text-xs text-gray-600">{order.id.slice(0, 8)}...</p>
+                        <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-gray-900">₱{Number(order.total_price).toFixed(2)}</span>
+                        <Badge variant={STATUS_BADGE[order.status]} dot>{order.status}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">

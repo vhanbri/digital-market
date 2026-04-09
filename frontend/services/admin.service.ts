@@ -107,6 +107,7 @@ export interface AdminStats {
   totalOrders: number;
   pendingOrders: number;
   totalCrops: number;
+  totalRevenue: number;
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
@@ -117,6 +118,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     { count: totalOrders },
     { count: pendingOrders },
     { count: totalCrops },
+    { data: revenueData },
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'farmer'),
@@ -124,7 +126,13 @@ export async function getAdminStats(): Promise<AdminStats> {
     supabase.from('orders').select('*', { count: 'exact', head: true }),
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('crops').select('*', { count: 'exact', head: true }),
+    supabase.from('orders').select('total_price').in('status', ['accepted', 'delivered']),
   ]);
+
+  const totalRevenue = (revenueData ?? []).reduce(
+    (sum: number, o: { total_price: number }) => sum + Number(o.total_price),
+    0,
+  );
 
   return {
     totalUsers: totalUsers ?? 0,
@@ -133,5 +141,17 @@ export async function getAdminStats(): Promise<AdminStats> {
     totalOrders: totalOrders ?? 0,
     pendingOrders: pendingOrders ?? 0,
     totalCrops: totalCrops ?? 0,
+    totalRevenue,
   };
+}
+
+export async function getRecentOrders(limit = 5): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Order[];
 }
