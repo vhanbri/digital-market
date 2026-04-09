@@ -144,8 +144,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
-    router.push('/');
-  }, [router]);
+    window.location.href = '/';
+  }, []);
 
   return (
     <AuthContext.Provider
