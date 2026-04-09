@@ -34,3 +34,12 @@ export async function getOrderItems(orderId: string): Promise<OrderItem[]> {
   if (error) throw new Error(error.message);
   return (data ?? []) as OrderItem[];
 }
+
+export async function updateOrderStatus(orderId: string, status: string): Promise<Order> {
+  const { data, error } = await supabase.rpc('admin_update_order_status', {
+    p_order_id: orderId,
+    p_status: status,
+  });
+  if (error) throw new Error(error.message);
+  return data as Order;
+}

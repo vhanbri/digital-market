@@ -43,3 +43,7 @@ export interface CartItem {
   crop: Crop;
   quantity: number;
 }
+
+export interface OrderWithItems extends Order {
+  items: OrderItem[];
+}

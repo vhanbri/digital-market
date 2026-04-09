@@ -17,10 +17,10 @@ import { getCrops } from '../services/crop.service';
 import { useCart } from '../hooks/useCart';
 import { colors, spacing, fontSize } from '../constants/theme';
 import type { Crop } from '../types';
-import type { MainTabParamList, AppStackParamList } from '../navigation/types';
+import type { BuyerTabParamList, AppStackParamList } from '../navigation/types';
 
 type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Marketplace'>,
+  BottomTabScreenProps<BuyerTabParamList, 'Marketplace'>,
   NativeStackScreenProps<AppStackParamList>
 >;
 

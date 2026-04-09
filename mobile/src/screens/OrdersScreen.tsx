@@ -3,13 +3,17 @@ import {
   View,
   Text,
   FlatList,
+  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getMyOrders } from '../services/order.service';
 import { colors, spacing, fontSize } from '../constants/theme';
 import type { Order, OrderStatus } from '../types';
+import type { AppStackParamList } from '../navigation/types';
 
 const STATUS_COLORS: Record<OrderStatus, { bg: string; text: string }> = {
   pending: { bg: '#fef3c7', text: '#92400e' },
@@ -19,6 +23,7 @@ const STATUS_COLORS: Record<OrderStatus, { bg: string; text: string }> = {
 };
 
 export default function OrdersScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -42,7 +47,7 @@ export default function OrdersScreen() {
   const renderOrder = ({ item }: { item: Order }) => {
     const statusStyle = STATUS_COLORS[item.status];
     return (
-      <View style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('OrderDetail', { orderId: item.id })}>
         <View style={styles.cardHeader}>
           <Text style={styles.orderId}>Order #{item.id.slice(0, 8)}</Text>
           <View style={[styles.badge, { backgroundColor: statusStyle.bg }]}>
@@ -63,7 +68,7 @@ export default function OrdersScreen() {
             </Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
